@@ -2,7 +2,6 @@ package com.kcdev.android.localfileshare;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +27,7 @@ public class MainActivity extends Activity implements OnClickListener {
     Button btnSendImage;
     ImageView imageView;
     Button btnTakePhoto;
+
     private static final int CAM_REQUEST = 1313;
     private ShareActionProvider mShareActionProvider;
     Uri globalUri;
@@ -179,8 +179,8 @@ public class MainActivity extends Activity implements OnClickListener {
         // you have two ways to display selected image
 
         // ( 1 ) imageView.setImageURI(uriFromPath);
-
         // ( 2 ) imageView.setImageBitmap(bitmap);
+
         /*
         Bitmap bitmap = null;
         try {
