@@ -1,7 +1,5 @@
 package com.kcdev.android.localfileshare;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -9,9 +7,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -20,6 +17,12 @@ import android.widget.ShareActionProvider;
 
 import com.kcdev.android.getimage.R;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 public class MainActivity extends Activity implements OnClickListener {
 
@@ -27,26 +30,12 @@ public class MainActivity extends Activity implements OnClickListener {
     Button btnSendImage;
     ImageView imageView;
     Button btnTakePhoto;
+    String currPhotoPath;
+    String currPhotoPathAbsolute;
 
-    private static final int CAM_REQUEST = 1313;
+    private static final int CAM_REQUEST = 1;
     private ShareActionProvider mShareActionProvider;
     Uri globalUri;
-
-    //Creating share menu
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate menu resource file.
-        getMenuInflater().inflate(R.menu.share_menu, menu);
-
-        // Locate MenuItem with ShareActionProvider
-        MenuItem item = menu.findItem(R.id.menu_item_share);
-
-        // Fetch and store ShareActionProvider
-        mShareActionProvider = (ShareActionProvider) item.getActionProvider();
-
-        // Return true to display menu
-        return true;
-    }
 
     // Call to update the share intent
     private void setShareIntent(Intent shareIntent) {
@@ -59,10 +48,22 @@ public class MainActivity extends Activity implements OnClickListener {
     {
         @Override
         public void onClick(View v) {
-            // TODO Auto-generated method stub
 
             Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(cameraIntent, CAM_REQUEST);
+            if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+                // Create the File where the photo should go
+                File photoFile = null;
+                try {
+                    photoFile = createImageFile();
+                } catch (IOException ex) {
+                    // Error occurred while creating the File
+                }
+                // Continue only if the File was successfully created
+                if (photoFile != null) {
+                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                    startActivityForResult(cameraIntent, CAM_REQUEST);
+                }
+            }
         }
     }
 
@@ -121,7 +122,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
     @Override
     protected void onActivityResult(int reqCode, int resCode, Intent data) {
-        if(resCode == Activity.RESULT_OK && data != null){
+        if(resCode == Activity.RESULT_OK && data != null && reqCode != CAM_REQUEST){
             String realPath;
             // SDK < API11
             if (Build.VERSION.SDK_INT < 11)
@@ -135,44 +136,47 @@ public class MainActivity extends Activity implements OnClickListener {
             else
                 realPath = RealPathUtil.getRealPathFromURI_API19(this, data.getData());
 
-
-            setTextViews(Build.VERSION.SDK_INT, data.getData().getPath(),realPath);
+            //setTextViews(data.getData().getPath(),realPath);
+            setTextViews(realPath);
         }
-        if (reqCode == CAM_REQUEST) {
-            Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
-            imageView.setImageBitmap(thumbnail);
-
-            String realPath;
-            // SDK < API11
-            if (Build.VERSION.SDK_INT < 11)
-                realPath = RealPathUtil.getRealPathFromURI_BelowAPI11(this, data.getData());
-
-                // SDK >= 11 && SDK < 19
-            else if (Build.VERSION.SDK_INT < 19)
-                realPath = RealPathUtil.getRealPathFromURI_API11to18(this, data.getData());
-
-                // SDK > 19 (Android 4.4)
-            else
-                realPath = RealPathUtil.getRealPathFromURI_API19(this, data.getData());
-
-
-            setTextViews(Build.VERSION.SDK_INT, data.getData().getPath(),realPath);
-
-
-            /*Uri uriFromPath = getImageUri(getApplicationContext(), thumbnail);
-            globalUri = uriFromPath;
-
-            imageView.setImageURI(uriFromPath);
-            Intent shareIntent = new Intent();
-            shareIntent.setAction(Intent.ACTION_SEND);
-            shareIntent.putExtra(Intent.EXTRA_STREAM, uriFromPath);
-            shareIntent.setType("image/jpeg");
-            setShareIntent(shareIntent);*/
+        else if (reqCode == CAM_REQUEST && resCode == RESULT_OK ) {
+            //simplified code for displaying image after photo capture
+            setTextViews(currPhotoPathAbsolute);
+            //function to add photo to media provider
+            addPhotoToGallery();
         }
     }
 
-    private void setTextViews(int sdk, String uriPath,String realPath){
 
+    //function to save image
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imgName = "JPEG_" + timeStamp + "_";
+        File storagePath = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+        File photo = File.createTempFile(
+                imgName,  /* prefix */
+                ".jpg",         /* suffix */
+                storagePath      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currPhotoPath = "file:" + photo.getAbsolutePath();
+        currPhotoPathAbsolute = String.valueOf(photo.getAbsoluteFile());
+        return photo;
+    }
+
+    private void addPhotoToGallery() {
+        Intent mediaScannerIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(currPhotoPathAbsolute);
+        Uri photoUri = Uri.fromFile(f);
+        mediaScannerIntent.setData(photoUri);
+        this.sendBroadcast(mediaScannerIntent);
+    }
+
+    //private void setTextViews(int sdk, String uriPath,String realPath){
+    private void setTextViews(String realPath){
         Uri uriFromPath = Uri.fromFile(new File(realPath));
         globalUri = uriFromPath;
 
@@ -192,12 +196,6 @@ public class MainActivity extends Activity implements OnClickListener {
         */
 
         imageView.setImageURI(uriFromPath);
-
-        Intent shareIntent = new Intent();
-        shareIntent.setAction(Intent.ACTION_SEND);
-        shareIntent.putExtra(Intent.EXTRA_STREAM, uriFromPath);
-        shareIntent.setType("image/jpeg");
-        setShareIntent(shareIntent);
 
     }
 
