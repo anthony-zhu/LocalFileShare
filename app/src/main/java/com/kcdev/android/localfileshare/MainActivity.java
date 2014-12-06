@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +23,7 @@ import com.kcdev.android.getimage.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -34,7 +38,7 @@ public class MainActivity extends Activity implements OnClickListener {
     String currPhotoPath;
     String currPhotoPathAbsolute;
 
-    private static final int CAM_REQUEST = 1;
+    private static final int CAM_REQUEST = 1313;
     private ShareActionProvider mShareActionProvider;
     Uri globalUri;
 
@@ -142,7 +146,7 @@ public class MainActivity extends Activity implements OnClickListener {
             //setTextViews(data.getData().getPath(),realPath);
             setTextViews(realPath);
         }
-        else if (reqCode == CAM_REQUEST && resCode == RESULT_OK ) {
+        else if (reqCode == CAM_REQUEST && resCode == Activity.RESULT_OK ) {
             //simplified code for displaying image after photo capture
             setTextViews(currPhotoPathAbsolute);
             //function to add photo to media provider
@@ -188,7 +192,7 @@ public class MainActivity extends Activity implements OnClickListener {
         // ( 1 ) imageView.setImageURI(uriFromPath);
         // ( 2 ) imageView.setImageBitmap(bitmap);
 
-        /*
+
         Bitmap bitmap = null;
         try {
             bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uriFromPath));
@@ -196,9 +200,35 @@ public class MainActivity extends Activity implements OnClickListener {
             e.printStackTrace();
         }
         imageView.setImageBitmap(bitmap);
-        */
 
-        imageView.setImageURI(uriFromPath);
+
+        //imageView.setImageURI(uriFromPath);
+
+
+        ExifInterface exif = null;
+        try {
+            exif = new ExifInterface(currPhotoPathAbsolute);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+        //rotate image if not in proper orientation
+        if(orientation == 6) {
+            Matrix matrix = new Matrix();
+            matrix.postRotate(90);
+            Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            imageView.setImageBitmap(rotatedBitmap);
+        }
+        else if(orientation == 3) {
+                Matrix matrix = new Matrix();
+                matrix.postRotate(180);
+                Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                imageView.setImageBitmap(rotatedBitmap);
+            }
+        else
+        {
+            imageView.setImageBitmap(bitmap);
+        }
 
     }
 
