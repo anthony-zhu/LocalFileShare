@@ -14,6 +14,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ShareActionProvider;
+import android.widget.Toast;
 
 import com.kcdev.android.getimage.R;
 
@@ -57,6 +58,8 @@ public class MainActivity extends Activity implements OnClickListener {
                     photoFile = createImageFile();
                 } catch (IOException ex) {
                     // Error occurred while creating the File
+                    Toast toast = Toast.makeText(getApplicationContext(), "Failed to create photo", Toast.LENGTH_SHORT);
+                    toast.show();
                 }
                 // Continue only if the File was successfully created
                 if (photoFile != null) {
@@ -91,12 +94,12 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     public void sendImage(View view){
-        Intent shareIntent2 = new Intent();
-        shareIntent2.setAction(Intent.ACTION_SEND);
-        shareIntent2.putExtra(Intent.EXTRA_STREAM, globalUri);
-        shareIntent2.setType("image/jpeg");
-        setShareIntent(shareIntent2);
-        startActivity(Intent.createChooser(shareIntent2, "Send Photo..."));
+        Intent shareImageIntent = new Intent();
+        shareImageIntent.setAction(Intent.ACTION_SEND);
+        shareImageIntent.putExtra(Intent.EXTRA_STREAM, globalUri);
+        shareImageIntent.setType("image/jpeg");
+        setShareIntent(shareImageIntent);
+        startActivity(Intent.createChooser(shareImageIntent, "Send Photo..."));
     }
 
     @Override
