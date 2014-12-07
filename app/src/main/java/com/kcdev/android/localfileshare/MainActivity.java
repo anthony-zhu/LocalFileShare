@@ -91,9 +91,8 @@ public class MainActivity extends Activity implements OnClickListener {
         ParseUser.enableAutomaticUser();
         ParseACL defaultACL = new ParseACL();
 
-        //set read access to public
+        //set read access to public for Parse
         defaultACL.setPublicReadAccess(true);
-
         ParseACL.setDefaultACL(defaultACL, true);
 
         // get reference to views
@@ -169,28 +168,28 @@ public class MainActivity extends Activity implements OnClickListener {
             //function to add photo to media provider
             addPhotoToGallery();
 
-            //new code to auto upload to Parse
+            //code to auto upload to Parse
             File imageFile = new File(currPhotoPathAbsolute);
+            String imageFileName = imageFile.getName();
             Uri uriFromPath = Uri.fromFile(imageFile);
-            Bitmap bitmap = null;
+            Bitmap imageBitmap = null;
             try {
-                bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uriFromPath));
+                imageBitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uriFromPath));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
             ByteArrayOutputStream uploadArrayStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, uploadArrayStream);
+            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, uploadArrayStream);
             byte[] imageUpload = uploadArrayStream.toByteArray();
-            ParseFile parseUpload = new ParseFile(imageFile.getName(), imageUpload);
+            ParseFile parseUpload = new ParseFile(imageFileName, imageUpload);
             //auto upload to Parse
             parseUpload.saveInBackground();
-
             //create the structure in Parse to store the photo
             ParseObject photoUploads = new ParseObject("UploadedImages");
-            photoUploads.put("ImageName", imageFile.getName());
+            photoUploads.put("ImageName", imageFileName);
             photoUploads.put("FileName", parseUpload);
             photoUploads.saveInBackground();
-            Toast.makeText(MainActivity.this, "Image Uploaded to the Cloud",Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "Image Shared to the Cloud",Toast.LENGTH_LONG).show();
         }
     }
 
@@ -253,18 +252,20 @@ public class MainActivity extends Activity implements OnClickListener {
         }
         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
         //rotate image if not in proper orientation
-        if(orientation == 6) {
+        if (orientation == 3 || orientation == 6 || orientation == 8){
             Matrix matrix = new Matrix();
-            matrix.postRotate(90);
+            switch(orientation)
+            {
+                case 6: matrix.postRotate(90);
+                        break;
+                case 3: matrix.postRotate(180);
+                        break;
+                case 8: matrix.postRotate(270);
+                        break;
+            }
             Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             imageView.setImageBitmap(rotatedBitmap);
         }
-        else if(orientation == 3) {
-                Matrix matrix = new Matrix();
-                matrix.postRotate(180);
-                Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                imageView.setImageBitmap(rotatedBitmap);
-            }
         else
         {
             imageView.setImageBitmap(bitmap);
