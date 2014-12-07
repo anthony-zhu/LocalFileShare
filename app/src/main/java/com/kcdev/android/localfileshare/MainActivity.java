@@ -28,6 +28,13 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+//importing parse SDK and needed features
+import com.parse.Parse;
+import com.parse.ParseACL;
+import com.parse.ParseFile;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
+
 
 public class MainActivity extends Activity implements OnClickListener {
 
@@ -78,6 +85,16 @@ public class MainActivity extends Activity implements OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //initialize Parse
+        Parse.initialize(this, "pxTOcONFXPsseHcKpV8QUYR7xIpfbOAUgWwATyYj", "Oda0Rzk4MzS70OPiWvba80DZov6XXWtlEiyoNgkL");
+        ParseUser.enableAutomaticUser();
+        ParseACL defaultACL = new ParseACL();
+
+        //set read access to public
+        defaultACL.setPublicReadAccess(true);
+
+        ParseACL.setDefaultACL(defaultACL, true);
 
         // get reference to views
         btnSelectImage = (Button) findViewById(R.id.btnSelectImage);
@@ -151,6 +168,29 @@ public class MainActivity extends Activity implements OnClickListener {
             setTextViews(currPhotoPathAbsolute);
             //function to add photo to media provider
             addPhotoToGallery();
+
+            //new code to auto upload to Parse
+            File imageFile = new File(currPhotoPathAbsolute);
+            Uri uriFromPath = Uri.fromFile(imageFile);
+            Bitmap bitmap = null;
+            try {
+                bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uriFromPath));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            ByteArrayOutputStream uploadArrayStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, uploadArrayStream);
+            byte[] imageUpload = uploadArrayStream.toByteArray();
+            ParseFile parseUpload = new ParseFile(imageFile.getName(), imageUpload);
+            //auto upload to Parse
+            parseUpload.saveInBackground();
+
+            //create the structure in Parse to store the photo
+            ParseObject photoUploads = new ParseObject("UploadedImages");
+            photoUploads.put("ImageName", imageFile.getName());
+            photoUploads.put("FileName", parseUpload);
+            photoUploads.saveInBackground();
+            Toast.makeText(MainActivity.this, "Image Uploaded to the Cloud",Toast.LENGTH_LONG).show();
         }
     }
 
@@ -207,7 +247,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
         ExifInterface exif = null;
         try {
-            exif = new ExifInterface(currPhotoPathAbsolute);
+            exif = new ExifInterface(realPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
