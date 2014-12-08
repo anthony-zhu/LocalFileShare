@@ -29,6 +29,7 @@ import com.parse.ParseACL;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -189,13 +190,22 @@ public class MainFragment extends Fragment {
             byte[] imageUpload = uploadArrayStream.toByteArray();
             ParseFile parseUpload = new ParseFile(imageFileName, imageUpload);
             //auto upload to Parse
-            parseUpload.saveInBackground();
+            parseUpload.saveInBackground(new SaveCallback() {
+                @Override
+                public void done(com.parse.ParseException e) {
+                    if (e == null) {
+                        Toast.makeText(getActivity(), "Image Shared to the Cloud",Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getActivity(), "Failed to Share to the Cloud",Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
             //create the structure in Parse to store the photo
             ParseObject photoUploads = new ParseObject("UploadedImages");
             photoUploads.put("ImageName", imageFileName);
             photoUploads.put("FileName", parseUpload);
             photoUploads.saveInBackground();
-            Toast.makeText(getActivity(), "Image Shared to the Cloud",Toast.LENGTH_LONG).show();
+            //Toast.makeText(getActivity(), "Image Shared to the Cloud",Toast.LENGTH_LONG).show();
         }
     }
 
@@ -262,11 +272,14 @@ public class MainFragment extends Fragment {
             Matrix matrix = new Matrix();
             switch(orientation)
             {
+                //under rotated by 90 degrees
                 case 6: matrix.postRotate(90);
                     break;
+                //upside down
                 case 3: matrix.postRotate(180);
                     break;
-                case 8: matrix.postRotate(270);
+                //over rotated by 90 degrees
+                case 8: matrix.preRotate(90);
                     break;
             }
             Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);

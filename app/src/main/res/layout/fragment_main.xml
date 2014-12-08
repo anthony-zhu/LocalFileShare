@@ -12,7 +12,6 @@
     <LinearLayout
         android:id="@+id/LinearLayout01"
         android:orientation="horizontal"
-        android:background="#80000000"
         android:paddingLeft="4.0dip"
         android:paddingTop="4.0dip"
         android:paddingRight="4.0dip"
@@ -25,7 +24,6 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
             android:text="Select Image">
         </Button>
 
@@ -34,7 +32,6 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
             android:text="Take Photo">
         </Button>
 
@@ -58,7 +55,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/btnSelectImage"
-            android:background="#80000000"
             android:text="Send Image" />
     </LinearLayout>
 
