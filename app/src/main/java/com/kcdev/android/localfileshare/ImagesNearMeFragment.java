@@ -35,13 +35,23 @@ public class ImagesNearMeFragment extends Fragment {
     ImageView imageView;
     private LocationManager locationManager;
     private String provider;
-    private int latitude;
-    private int longitude;
+    private int latitude = 0;
+    private int longitude = 0;
 
     public ImagesNearMeFragment() {
         // Required empty public constructor
     }
 
+    public void onLocationChanged(Location location){
+        if (location != null) {
+            latitude = (int) location.getLatitude();
+            longitude = (int) location.getLongitude();
+        }
+        else {
+            latitude = 0;
+            longitude = 0;
+        }
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -53,38 +63,43 @@ public class ImagesNearMeFragment extends Fragment {
         Criteria criteria = new Criteria();
         provider = locationManager.getBestProvider(criteria, false);
         Location location = locationManager.getLastKnownLocation(provider);
-        latitude = (int) (location.getLatitude());
-        longitude = (int) (location.getLongitude());
-        Toast.makeText(getActivity(), "This is the latitude - "+latitude, Toast.LENGTH_SHORT).show();
-        Toast.makeText(getActivity(), "This is the longitude - "+longitude, Toast.LENGTH_SHORT).show();
+        if (location != null) {
+            latitude = (int) (location.getLatitude());
+            longitude = (int) (location.getLongitude());
+        }
+        else {
+            latitude = 0;
+            longitude = 0;
+        }
+        Toast.makeText(getActivity(), "This is the latitude : "+latitude, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), "This is the longitude : "+longitude, Toast.LENGTH_SHORT).show();
 
         final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_images_near_me, container, false);
-        final ParseObject image = new ParseObject("UploadedImages");
+        //final ParseObject image = new ParseObject("UploadedImages");
         ParseQuery<ParseObject> query = ParseQuery.getQuery("UploadedImages");
-        query.whereGreaterThan("latitude", String.valueOf(latitude - 1));
-        query.whereLessThan("latitude", String.valueOf(latitude + 1));
-        query.whereGreaterThan("longitude", String.valueOf(longitude - 1));
-        query.whereLessThan("longitude", String.valueOf(longitude + 1));
+        query.whereGreaterThanOrEqualTo("latitude", latitude - 1);
+        query.whereLessThanOrEqualTo("latitude", latitude + 1);
+        query.whereGreaterThanOrEqualTo("longitude", longitude - 1);
+        query.whereLessThanOrEqualTo("longitude", longitude + 1);
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> object, ParseException e) {
                 if (e == null) {
-                    String imageName = object.get(0).getString("ImageName");
-                    ParseFile image = (ParseFile) object.get(0).get("FileName");
-                    image.getDataInBackground(new GetDataCallback() {
-                        @Override
-                        public void done(byte[] bytes, ParseException e) {
-                            if (e == null)
-                            {
-                                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                                imageView =(ImageView) rootView.findViewById(R.id.image);
-                                imageView.setImageBitmap(bmp);
+                    //String imageName = object.get(0).getString("ImageName");
+                    if (object.size() != 0) {
+                        ParseFile image = (ParseFile) object.get(0).get("FileName");
+                        image.getDataInBackground(new GetDataCallback() {
+                            @Override
+                            public void done(byte[] bytes, ParseException e) {
+                                if (e == null) {
+                                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                    imageView = (ImageView) rootView.findViewById(R.id.image);
+                                    imageView.setImageBitmap(bmp);
+                                } else {
+                                    Log.d("test", "There was a problem downloading the data.");
+                                }
                             }
-                            else
-                            {
-                                Log.d("test", "There was a problem downloading the data.");
-                            }
-                        }
-                    });
+                        });
+                    }
 
                     //Toast.makeText(getActivity(), "Image Name:" + imageName, Toast.LENGTH_LONG).show();
                 } else {
