@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -37,21 +38,39 @@ public class ImagesNearMeFragment extends Fragment {
     private String provider;
     private int latitude = 0;
     private int longitude = 0;
+    private final LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            if (location != null) {
+                latitude = (int) location.getLatitude();
+                longitude = (int) location.getLongitude();
+            }
+            else {
+                latitude = 0;
+                longitude = 0;
+            }
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
 
     public ImagesNearMeFragment() {
         // Required empty public constructor
     }
 
-    public void onLocationChanged(Location location){
-        if (location != null) {
-            latitude = (int) location.getLatitude();
-            longitude = (int) location.getLongitude();
-        }
-        else {
-            latitude = 0;
-            longitude = 0;
-        }
-    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -71,8 +90,8 @@ public class ImagesNearMeFragment extends Fragment {
             latitude = 0;
             longitude = 0;
         }
-        Toast.makeText(getActivity(), "This is the latitude : "+latitude, Toast.LENGTH_SHORT).show();
-        Toast.makeText(getActivity(), "This is the longitude : "+longitude, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), "Your location : ( "+latitude+", "+longitude + ")", Toast.LENGTH_SHORT).show();
+
 
         final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_images_near_me, container, false);
         //final ParseObject image = new ParseObject("UploadedImages");
@@ -81,6 +100,7 @@ public class ImagesNearMeFragment extends Fragment {
         query.whereLessThanOrEqualTo("latitude", latitude + 1);
         query.whereGreaterThanOrEqualTo("longitude", longitude - 1);
         query.whereLessThanOrEqualTo("longitude", longitude + 1);
+        query.orderByDescending("createdAt");
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> object, ParseException e) {
                 if (e == null) {

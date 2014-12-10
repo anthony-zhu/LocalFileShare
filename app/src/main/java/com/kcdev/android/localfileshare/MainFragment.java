@@ -1,6 +1,10 @@
 package com.kcdev.android.localfileshare;
 
 import android.app.Activity;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ShareActionProvider;
 import android.widget.Toast;
@@ -46,13 +51,47 @@ public class MainFragment extends Fragment {
     Button btnSelectImage;
     Button btnSendImage;
     ImageView imageView;
-    Button btnTakePhoto;
+    ImageButton btnTakePhoto;
     String currPhotoPath;
     String currPhotoPathAbsolute;
 
     private static final int CAM_REQUEST = 1313;
     private ShareActionProvider mShareActionProvider;
     Uri globalUri;
+
+    //variables for location data
+    private LocationManager locationManager;
+    private String provider;
+    private int latitude = 0;
+    private int longitude = 0;
+    private final LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            if (location != null) {
+                latitude = (int) location.getLatitude();
+                longitude = (int) location.getLongitude();
+            }
+            else {
+                latitude = 0;
+                longitude = 0;
+            }
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -61,7 +100,7 @@ public class MainFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_main, container, false);
         // get reference to views
         btnSelectImage = (Button) rootView.findViewById(R.id.btnSelectImage);
-        btnTakePhoto = (Button) rootView.findViewById(R.id.btnTakePhoto);
+        btnTakePhoto = (ImageButton) rootView.findViewById(R.id.btnTakePhoto);
         btnSendImage = (Button) rootView.findViewById(R.id.btnSendImage);
         imageView = (ImageView) rootView.findViewById(R.id.imgView);
 
@@ -84,6 +123,21 @@ public class MainFragment extends Fragment {
             }
         });
         btnTakePhoto.setOnClickListener(new buttonTakePhotoClick());
+
+        //get the location when app loads
+        locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        provider = locationManager.getBestProvider(criteria, false);
+        Location location = locationManager.getLastKnownLocation(provider);
+        if (location != null) {
+            latitude = (int) (location.getLatitude());
+            longitude = (int) (location.getLongitude());
+        }
+        else {
+            latitude = 0;
+            longitude = 0;
+        }
+
 
         return rootView;
     }
@@ -200,10 +254,14 @@ public class MainFragment extends Fragment {
                     }
                 }
             });
+            //get the location before storing into parse
+
             //create the structure in Parse to store the photo
             ParseObject photoUploads = new ParseObject("UploadedImages");
             photoUploads.put("ImageName", imageFileName);
             photoUploads.put("FileName", parseUpload);
+            photoUploads.put("latitude", latitude);
+            photoUploads.put("longitude", longitude);
             photoUploads.saveInBackground();
             //Toast.makeText(getActivity(), "Image Shared to the Cloud",Toast.LENGTH_LONG).show();
         }
