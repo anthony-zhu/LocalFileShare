@@ -1,4 +1,4 @@
-package com.kcdev.android.localfileshare;
+package com.kcdev.android.localFileShare;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

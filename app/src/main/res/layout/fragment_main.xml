@@ -8,7 +8,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="#AAE2FF"
     android:orientation="vertical"
-    tools:context="com.kcdev.android.localfileshare.MainFragment">
+    tools:context="com.kcdev.android.localFileShare.MainFragment">
 
     <LinearLayout
         android:id="@+id/LinearLayout01"

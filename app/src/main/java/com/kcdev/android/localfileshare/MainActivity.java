@@ -1,4 +1,4 @@
-package com.kcdev.android.localfileshare;
+package com.kcdev.android.localFileShare;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -6,8 +6,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-
-import com.kcdev.android.getimage.R;
 
 public class MainActivity extends FragmentActivity {
 

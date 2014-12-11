@@ -1,4 +1,4 @@
-package com.kcdev.android.localfileshare;
+package com.kcdev.android.localFileShare;
 
 import android.app.Activity;
 import android.location.Criteria;
@@ -25,8 +25,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ShareActionProvider;
 import android.widget.Toast;
-
-import com.kcdev.android.getimage.R;
 
 //importing parse SDK and needed features
 import com.parse.Parse;

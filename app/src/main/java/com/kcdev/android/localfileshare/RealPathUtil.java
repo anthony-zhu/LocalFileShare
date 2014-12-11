@@ -1,4 +1,4 @@
-package com.kcdev.android.localfileshare;
+package com.kcdev.android.localFileShare;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

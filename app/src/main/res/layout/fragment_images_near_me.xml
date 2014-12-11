@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFE9A0"
-    tools:context="com.kcdev.android.localfileshare.ImagesNearMeFragment">
+    tools:context="com.kcdev.android.localFileShare.ImagesNearMeFragment">
 
     <!-- TODO: Update blank fragment layout -->
 

@@ -7,7 +7,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="#AAE2FF"
-    tools:context="com.kcdev.android.localfileshare.MainFragment">
+    tools:context="com.kcdev.android.localFileShare.MainFragment">
 
     <LinearLayout
         android:id="@+id/LinearLayout01"
