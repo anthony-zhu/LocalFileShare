@@ -195,13 +195,6 @@ public class MainFragment extends Fragment {
         startActivity(Intent.createChooser(shareImageIntent, "Send Photo..."));
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
-    }
-
     @Override
     public void onActivityResult(int reqCode, int resCode, Intent data) {
         if(resCode == Activity.RESULT_OK && data != null && reqCode != CAM_REQUEST){
@@ -218,7 +211,6 @@ public class MainFragment extends Fragment {
             else
                 realPath = RealPathUtil.getRealPathFromURI_API19(getActivity(), data.getData());
 
-            //setTextViews(data.getData().getPath(),realPath);
             setTextViews(realPath);
         }
         else if (reqCode == CAM_REQUEST && resCode == Activity.RESULT_OK ) {
@@ -252,16 +244,13 @@ public class MainFragment extends Fragment {
                     }
                 }
             });
-            //get the location before storing into parse
-
-            //create the structure in Parse to store the photo
+            //store into Parse with the necessary fields
             ParseObject photoUploads = new ParseObject("UploadedImages");
             photoUploads.put("ImageName", imageFileName);
             photoUploads.put("FileName", parseUpload);
             photoUploads.put("latitude", latitude);
             photoUploads.put("longitude", longitude);
             photoUploads.saveInBackground();
-            //Toast.makeText(getActivity(), "Image Shared to the Cloud",Toast.LENGTH_LONG).show();
         }
     }
 
@@ -273,11 +262,7 @@ public class MainFragment extends Fragment {
         String imgName = "JPEG_" + timeStamp + "_";
         File storagePath = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES);
-        File photo = File.createTempFile(
-                imgName,  /* prefix */
-                ".jpg",         /* suffix */
-                storagePath      /* directory */
-        );
+        File photo = File.createTempFile(imgName, ".jpg", storagePath);
 
         // Save a file: path for use with ACTION_VIEW intents
         currPhotoPath = "file:" + photo.getAbsolutePath();
@@ -298,12 +283,6 @@ public class MainFragment extends Fragment {
         Uri uriFromPath = Uri.fromFile(new File(realPath));
         globalUri = uriFromPath;
 
-        // you have two ways to display selected image
-
-        // ( 1 ) imageView.setImageURI(uriFromPath);
-        // ( 2 ) imageView.setImageBitmap(bitmap);
-
-
         Bitmap bitmap = null;
         try {
             bitmap = BitmapFactory.decodeStream(getActivity().getContentResolver().openInputStream(uriFromPath));
@@ -312,10 +291,7 @@ public class MainFragment extends Fragment {
         }
         imageView.setImageBitmap(bitmap);
 
-
         //imageView.setImageURI(uriFromPath);
-
-
         ExifInterface exif = null;
         try {
             exif = new ExifInterface(realPath);

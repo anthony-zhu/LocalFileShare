@@ -75,8 +75,6 @@ public class ImagesNearMeFragment extends Fragment {
 
         // Get the location manager
         locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
-        // Define the criteria how to select the locatioin provider -> use
-        // default
         Criteria criteria = new Criteria();
         provider = locationManager.getBestProvider(criteria, false);
         Location location = locationManager.getLastKnownLocation(provider);
@@ -102,7 +100,6 @@ public class ImagesNearMeFragment extends Fragment {
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> object, ParseException e) {
                 if (e == null) {
-                    //String imageName = object.get(0).getString("ImageName");
                     if (object.size() != 0) {
                         ParseFile image = (ParseFile) object.get(0).get("FileName");
                         image.getDataInBackground(new GetDataCallback() {
@@ -118,15 +115,12 @@ public class ImagesNearMeFragment extends Fragment {
                             }
                         });
                     }
-
-                    //Toast.makeText(getActivity(), "Image Name:" + imageName, Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(getActivity(), "No Image Downloaded", Toast.LENGTH_LONG).show();// something went wrong
+                    Toast.makeText(getActivity(), "No Image Downloaded", Toast.LENGTH_LONG).show();
                 }
             }
         });
 
-        // Inflate the layout for this fragment
         return rootView;
     }
 
