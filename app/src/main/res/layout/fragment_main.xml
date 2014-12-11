@@ -34,9 +34,11 @@
             android:layout_width="140dip"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginTop="6dp"
             android:text="Take Photo"
             android:src="@drawable/camera_icon"
-            android:alpha="0.6"/>
+            android:alpha="0.6"
+            android:background="@null"/>
 
 
     </LinearLayout>
@@ -52,7 +54,7 @@
     <LinearLayout
         android:id="@+id/LinearLayout02"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="15dp"
         android:layout_weight="0.15"
         android:gravity="center|bottom"
         android:orientation="vertical">
